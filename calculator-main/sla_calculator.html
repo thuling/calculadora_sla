@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de SLA</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a href="index.html" class="back-link">← Voltar ao Menu</a>
+  <div class="container">
+    <img src="levellogo.png" alt="Logo" class="logo">
+    <h3>Calcule o SLA aqui!</h3>
+
+    <label for="cliente">Cliente:</label>
+    <select id="cliente">
+      <option value="OUTRO">Selecione</option>
+      <option value="OUTRO">AMARANTE</option>
+      <option value="BK">BK</option>
+      <option value="RENOVA">RENOVA</option>
+      <option value="MOBI">MOBI</option>
+      <option value="VESUVIUS">VESUVIUS</option>
+    </select>
+
+    <label for="tipo">Nível de Prioridade:</label>
+    <select id="tipo">
+      <option value="selecione">Selecione</option>
+      <option value="normal">Normal</option>
+      <option value="urgente">Urgente</option>
+    </select>
+
+    <label for="listaHorarios">Lista de horários de chegada (um por linha):</label>
+    <textarea id="listaHorarios" rows="6" placeholder="Ex: dd/mm/aaaa HH:MM"></textarea>
+
+    <button id="calcularSlaBtn">CONFERIR</button>
+    <div id="resultado"></div>
+  </div>
+  <script src="js/sla_script.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Lead Time</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <a href="index.html" class="back-link">← Voltar ao Menu</a>
+    <div class="container">
+        <img src="levellogo.png" alt="Logo" class="logo">
+        <h3>Calculadora de Lead Time</h3>
+        <p>Calcula o tempo útil entre duas datas, considerando expediente (08h-17h, 1h de almoço) e feriados.</p>
+
+        <label for="dataInicio">Data e Hora de Início:</label>
+        <input type="text" id="dataInicio" placeholder="dd/mm/aaaa HH:MM:SS">
+
+        <label for="dataFim">Data e Hora de Fim:</label>
+        <input type="text" id="dataFim" placeholder="dd/mm/aaaa HH:MM:SS">
+
+        <button id="calcularLeadTimeBtn">CALCULAR</button>
+        <div id="resultadoLeadTime"></div>
+    </div>
+    <script src="js/lead_time_script.js"></script>
+</body>
+</html>
