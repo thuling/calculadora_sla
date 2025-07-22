@@ -1,17 +1,17 @@
-let feriados = [];
+let feriadosSla = [];
 
-// --- FUNÇÕES AUXILIARES (sem alterações) ---
+// --- FUNÇÕES AUXILIARES ---
 
-async function carregarFeriados() {
-    if (feriados.length > 0) return;
+// Carrega feriados do arquivo. O arquivo feriado.txt deve estar na mesma pasta que o index.html.
+async function carregarFeriadosSLA() {
+    if (feriadosSla.length > 0) return;
     try {
-        const response = await fetch('../feriado.txt');
+        const response = await fetch('feriado.txt'); // Caminho simplificado
         if (!response.ok) {
-            console.error("Arquivo feriado.txt não encontrado na raiz do projeto.");
-            return;
+            throw new Error(`Ficheiro 'feriado.txt' não encontrado. Status: ${response.status}`);
         }
         const text = await response.text();
-        feriados = text.split('\n')
+        feriadosSla = text.split('\n')
             .map(line => line.trim())
             .filter(line => line)
             .map(line => {
@@ -20,11 +20,12 @@ async function carregarFeriados() {
             });
     } catch (error) {
         console.error("Erro ao carregar o arquivo de feriados:", error);
-        document.getElementById('resultadoLeadTime').innerHTML = `<p class="error-msg">Não foi possível carregar feriados.</p>`;
+        // Lança o erro para ser apanhado pelo bloco principal e mostrado ao utilizador
+        throw new Error("Não foi possível carregar o ficheiro de feriados. Verifique se 'feriado.txt' existe e está no formato correto.");
     }
 }
 
-function parseDateTime(dateTimeStr) {
+function parseDateTimeSLA(dateTimeStr) {
     const parts = dateTimeStr.trim().split(/\s+/);
     if (parts.length < 2) return null;
     const [day, month, year] = parts[0].split('/');
@@ -39,14 +40,14 @@ function parseDateTime(dateTimeStr) {
     return date;
 }
 
-function isWorkday(dt) {
+function isWorkdaySLA(dt) {
     const dayOfWeek = dt.getDay();
     if (dayOfWeek === 0 || dayOfWeek === 6) return false;
     const dateStr = dt.toISOString().split('T')[0];
-    return !feriados.includes(dateStr);
+    return !feriadosSla.includes(dateStr);
 }
 
-function formatDuration(ms) {
+function formatDurationSLA(ms) {
     if (ms < 0) ms = 0;
     const totalSeconds = Math.floor(ms / 1000);
     const hours = Math.floor(totalSeconds / 3600);
@@ -55,13 +56,12 @@ function formatDuration(ms) {
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
+// --- FUNÇÃO DE CÁLCULO DE TEMPO ÚTIL ---
 
-// --- FUNÇÃO DE CÁLCULO DE INTERVALO (sem alterações) ---
-
-function calculateLeadTimeInterval(start, end) {
+function calculateTimeSpent(start, end) {
     let totalMs = 0;
     let current = new Date(start);
-    while (!isWorkday(current) || current.getHours() >= 17) {
+    while (!isWorkdaySLA(current) || current.getHours() >= 17) {
         current.setDate(current.getDate() + 1);
         current.setHours(8, 0, 0, 0);
     }
@@ -83,76 +83,66 @@ function calculateLeadTimeInterval(start, end) {
         }
         current.setDate(current.getDate() + 1);
         current.setHours(8, 0, 0, 0);
-        while (!isWorkday(current)) {
+        while (!isWorkdaySLA(current)) {
             current.setDate(current.getDate() + 1);
         }
     }
     return totalMs;
 }
 
+// --- EVENT LISTENER PRINCIPAL (MAIS ROBUSTO) ---
 
-// --- EVENT LISTENER PRINCIPAL (ATUALIZADO) ---
-
-document.getElementById('calcularLeadTimeBtn').addEventListener('click', async () => {
-    await carregarFeriados();
-    const resultadoDiv = document.getElementById('resultadoLeadTime');
+document.getElementById('verificarSlaBtn').addEventListener('click', async () => {
+    const resultadoDiv = document.getElementById('resultadoSLA');
     resultadoDiv.innerHTML = ''; // Limpa resultados anteriores
-    
-    const activeTabName = document.querySelector('.tab-button.active').innerText;
 
-    if (activeTabName === 'Intervalo Simples') {
-        const inicioStr = document.getElementById('dataInicio').value;
-        const fimStr = document.getElementById('dataFim').value;
-        const dataInicio = parseDateTime(inicioStr);
-        const dataFim = parseDateTime(fimStr);
-        if (!dataInicio || !dataFim) {
-            resultadoDiv.innerHTML = `<p class="error-msg">Datas inválidas. Use o formato dd/mm/aaaa HH:MM:SS.</p>`;
-            return;
-        }
-        if (dataInicio >= dataFim) {
-            resultadoDiv.innerHTML = `<p class="error-msg">A data de início deve ser anterior à data de fim.</p>`;
-            return;
-        }
-        const totalLeadTimeMs = calculateLeadTimeInterval(dataInicio, dataFim);
-        resultadoDiv.innerHTML = `
-            <div class="item-sla">
-                <p><strong>Lead Time Total Calculado:</strong> ${formatDuration(totalLeadTimeMs)}</p>
-            </div>`;
+    try {
+        await carregarFeriadosSLA();
 
-    } else if (activeTabName === 'Múltiplos Pares') {
-        const listaInicioStr = document.getElementById('listaInicio').value.trim().split('\n');
-        const listaFimStr = document.getElementById('listaFim').value.trim().split('\n');
+        const listaInicio = document.getElementById('listaInicioSLA').value.trim().split('\n');
+        const listaFim = document.getElementById('listaFimSLA').value.trim().split('\n');
+        const listaPrioridade = document.getElementById('listaPrioridadeSLA').value.trim().split('\n');
 
-        // Validação para garantir que as listas não estejam vazias e tenham o mesmo tamanho
-        if (listaInicioStr.length !== listaFimStr.length || (listaInicioStr.length === 1 && listaInicioStr[0] === '')) {
-            resultadoDiv.innerHTML = `<p class="error-msg">O número de datas de início e fim deve ser o mesmo e não pode estar vazio.</p>`;
-            return;
+        if (listaInicio.length !== listaFim.length || listaInicio.length !== listaPrioridade.length || (listaInicio.length === 1 && listaInicio[0] === '')) {
+            throw new Error("As três colunas devem ter o mesmo número de linhas e não podem estar vazias.");
         }
 
-        // Itera sobre cada par de datas
-        for (let i = 0; i < listaInicioStr.length; i++) {
-            const dataInicio = parseDateTime(listaInicioStr[i]);
-            const dataFim = parseDateTime(listaFimStr[i]);
+        for (let i = 0; i < listaInicio.length; i++) {
+            const dataInicio = parseDateTimeSLA(listaInicio[i]);
+            const dataFim = parseDateTimeSLA(listaFim[i]);
+            const prioridade = listaPrioridade[i].trim().toUpperCase();
 
-            // Valida cada linha individualmente
-            if (!dataInicio || !dataFim) {
-                resultadoDiv.innerHTML += `<p class="error-msg">Erro na linha ${i + 1}: Formato de data inválido.</p>`;
-                continue; // Pula para o próximo par
+            if (!dataInicio || !dataFim || !prioridade) {
+                resultadoDiv.innerHTML += `<p class="error-msg">Erro na linha ${i + 1}: Dados inválidos ou em falta.</p>`;
+                continue;
             }
-            if (dataInicio >= dataFim) {
-                resultadoDiv.innerHTML += `<p class="error-msg">Erro na linha ${i + 1}: A data de início deve ser anterior à de fim.</p>`;
-                continue; // Pula para o próximo par
+
+            let slaHoras = 0;
+            if (prioridade === 'N') {
+                slaHoras = 16;
+            } else if (prioridade === 'U') {
+                slaHoras = 6;
+            } else {
+                resultadoDiv.innerHTML += `<p class="error-msg">Erro na linha ${i + 1}: Prioridade inválida. Use 'N' ou 'U'.</p>`;
+                continue;
             }
+
+            const slaMs = slaHoras * 60 * 60 * 1000;
+            const tempoGastoMs = calculateTimeSpent(dataInicio, dataFim);
             
-            // Calcula o lead time para o par atual
-            const leadTimeMs = calculateLeadTimeInterval(dataInicio, dataFim);
-            
-            // Exibe o resultado individual para este par
+            const status = tempoGastoMs <= slaMs ? "Dentro do SLA" : "Fora do SLA";
+            const statusColor = status === "Dentro do SLA" ? "green" : "red";
+
             resultadoDiv.innerHTML += `
-                <div class="item-sla" style="margin-bottom: 10px;">
-                    <p><strong>Item ${i + 1} - Lead Time:</strong> ${formatDuration(leadTimeMs)}</p>
+                <div class="item-sla" style="margin-bottom: 10px; border-left: 5px solid ${statusColor};">
+                    <p><strong>Item ${i + 1}</strong></p>
+                    <p>Tempo Gasto: ${formatDurationSLA(tempoGastoMs)} | Meta SLA: ${String(slaHoras).padStart(2, '0')}:00:00</p>
+                    <p><strong>Status: <span style="color:${statusColor};">${status}</span></strong></p>
                 </div>
             `;
         }
+    } catch (error) {
+        // Se qualquer erro ocorrer, será mostrado aqui!
+        resultadoDiv.innerHTML = `<p class="error-msg">${error.message}</p>`;
     }
 });

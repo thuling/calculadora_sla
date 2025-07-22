@@ -1,161 +1,148 @@
-document.getElementById('calcularSlaBtn').addEventListener('click', calcularSLAs);
+let feriadosSla = [];
 
 // --- FUNÇÕES AUXILIARES ---
 
-/**
- * Converte uma string de data "dd/mm/aaaa HH:MM" para um objeto Date.
- * @param {string} dateString - A data no formato de string.
- * @returns {Date|null} - O objeto Date ou null se for inválido.
- */
-function parseDate(dateString) {
-    const parts = dateString.trim().split(/\s+/);
-    if (parts.length < 2) return null;
+async function carregarFeriadosSLA() {
+    if (feriadosSla.length > 0) return;
+    try {
+        // CORREÇÃO: O caminho './feriado.txt' é mais robusto.
+        // Ele diz ao navegador para procurar o ficheiro na mesma pasta que o ficheiro HTML que está a ser visualizado.
+        const response = await fetch('./feriado.txt'); 
+        if (!response.ok) {
+            throw new Error(`Ficheiro 'feriado.txt' não encontrado. Verifique se o ficheiro está na mesma pasta que o seu index.html.`);
+        }
+        const text = await response.text();
+        feriadosSla = text.split('\n')
+            .map(line => line.trim())
+            .filter(line => line)
+            .map(line => {
+                const [d, m, y] = line.split('/');
+                return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+            });
+    } catch (error) {
+        console.error("Erro detalhado ao carregar feriados:", error);
+        throw error; // Lança o erro para ser apanhado pelo bloco principal.
+    }
+}
 
+function parseDateTimeSLA(dateTimeStr) {
+    const parts = dateTimeStr.trim().split(/\s+/);
+    if (parts.length < 2) return null;
     const [day, month, year] = parts[0].split('/');
-    const [hour, minute] = parts[1].split(':');
-    
-    // Ano, Mês (0-11), Dia, Hora, Minuto
-    const date = new Date(year, month - 1, day, hour, minute);
-    
-    // Valida se a data criada é válida e corresponde aos valores de entrada
+    const timeParts = parts[1].split(':');
+    const hour = timeParts[0] || '00';
+    const minute = timeParts[1] || '00';
+    const second = timeParts[2] || '00';
+    const date = new Date(year, month - 1, day, hour, minute, second);
     if (isNaN(date.getTime()) || date.getDate() != day || date.getMonth() != month - 1) {
         return null;
     }
     return date;
 }
 
-/**
- * Verifica se um determinado dia é um dia útil (Segunda a Sexta).
- * @param {Date} date - A data para verificar.
- * @returns {boolean} - True se for um dia útil.
- */
-function isWorkday(date) {
-    const day = date.getDay();
-    return day > 0 && day < 6; // 0 é Domingo, 6 é Sábado
+function isWorkdaySLA(dt) {
+    const dayOfWeek = dt.getDay();
+    if (dayOfWeek === 0 || dayOfWeek === 6) return false;
+    const dateStr = dt.toISOString().split('T')[0];
+    return !feriadosSla.includes(dateStr);
 }
 
-/**
- * Adiciona o resultado formatado ao elemento na página.
- */
-function displayResult(div, index, entry, deadline) {
-    div.innerHTML += `
-    <div class="item-sla">
-      <p><strong>Item ${index + 1}:</strong> Entrada: ${entry}</p>
-      <p><strong>Prazo Final:</strong> ${deadline.toLocaleString('pt-BR', {dateStyle: 'short', timeStyle: 'short'})}</p>
-    </div>
-  `;
+function formatDurationSLA(ms) {
+    if (ms < 0) ms = 0;
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
+// --- FUNÇÃO DE CÁLCULO DE TEMPO ÚTIL ---
 
-// --- FUNÇÃO PRINCIPAL ---
+function calculateTimeSpent(start, end) {
+    let totalMs = 0;
+    let current = new Date(start);
+    while (!isWorkdaySLA(current) || current.getHours() >= 17) {
+        current.setDate(current.getDate() + 1);
+        current.setHours(8, 0, 0, 0);
+    }
+    if (current.getHours() < 8) current.setHours(8, 0, 0, 0);
+    if (current.getHours() >= 12 && current.getHours() < 13) current.setHours(13, 0, 0, 0);
+    if (current >= end) return 0;
+    while (current < end) {
+        const workEnd = new Date(current); workEnd.setHours(17, 0, 0, 0);
+        const lunchStart = new Date(current); lunchStart.setHours(12, 0, 0, 0);
+        const lunchEnd = new Date(current); lunchEnd.setHours(13, 0, 0, 0);
+        let endOfPeriod = (end < workEnd) ? end : workEnd;
+        if (current < lunchStart) {
+            let morningEnd = (endOfPeriod < lunchStart) ? endOfPeriod : lunchStart;
+            totalMs += (morningEnd - current);
+        }
+        if (endOfPeriod > lunchEnd) {
+            let afternoonStart = (current > lunchEnd) ? current : lunchEnd;
+            totalMs += (endOfPeriod - afternoonStart);
+        }
+        current.setDate(current.getDate() + 1);
+        current.setHours(8, 0, 0, 0);
+        while (!isWorkdaySLA(current)) {
+            current.setDate(current.getDate() + 1);
+        }
+    }
+    return totalMs;
+}
 
-function calcularSLAs() {
-    const tipo = document.getElementById("tipo").value;
-    const cliente = document.getElementById("cliente").value;
-    const listaHorarios = document.getElementById("listaHorarios").value.trim().split("\n");
-    const resultadoDiv = document.getElementById("resultado");
-    resultadoDiv.innerHTML = "";
+// --- EVENT LISTENER PRINCIPAL (MAIS ROBUSTO) ---
 
-    listaHorarios.forEach((linha, index) => {
-        if (linha.trim() === "") return;
+document.getElementById('verificarSlaBtn').addEventListener('click', async () => {
+    const resultadoDiv = document.getElementById('resultadoSLA');
+    resultadoDiv.innerHTML = ''; // Limpa resultados anteriores
 
-        const dataHora = parseDate(linha);
-        if (!dataHora) {
-            resultadoDiv.innerHTML += `<p class="error-msg">Linha ${index + 1}: Formato de data inválido. Use dd/mm/aaaa HH:MM.</p>`;
-            return;
+    try {
+        await carregarFeriadosSLA();
+
+        const listaInicio = document.getElementById('listaInicioSLA').value.trim().split('\n');
+        const listaFim = document.getElementById('listaFimSLA').value.trim().split('\n');
+        const listaPrioridade = document.getElementById('listaPrioridadeSLA').value.trim().split('\n');
+
+        if (listaInicio.length !== listaFim.length || listaInicio.length !== listaPrioridade.length || (listaInicio.length === 1 && listaInicio[0] === '')) {
+            throw new Error("As três colunas devem ter o mesmo número de linhas e não podem estar vazias.");
         }
 
-        let slaHoras = 0;
-        let slaDiasUteis = 0;
+        for (let i = 0; i < listaInicio.length; i++) {
+            const dataInicio = parseDateTimeSLA(listaInicio[i]);
+            const dataFim = parseDateTimeSLA(listaFim[i]);
+            const prioridade = listaPrioridade[i].trim().toUpperCase();
 
-        switch (cliente) {
-            case "BK":
-                slaDiasUteis = tipo === "normal" ? 3 : 0;
-                break;
-            case "RENOVA":
-                slaHoras = tipo === "normal" ? 6 : 0;
-                break;
-            case "MOBI":
-                slaHoras = tipo === "urgente" ? 4 : 24;
-                break;
-            case "VESUVIUS":
-                slaHoras = tipo === "urgente" ? 4 : 8;
-                break;
-            default:
-                slaHoras = tipo === "urgente" ? 6 : 16;
-        }
-        
-        // --- CÁLCULO DE SLA EM DIAS ÚTEIS ---
-        if (slaDiasUteis > 0) {
-            let prazoFinal = new Date(dataHora);
-            let diasAdicionados = 0;
-            while (diasAdicionados < slaDiasUteis) {
-                prazoFinal.setDate(prazoFinal.getDate() + 1);
-                if (isWorkday(prazoFinal)) {
-                    diasAdicionados++;
-                }
+            if (!dataInicio || !dataFim || !prioridade) {
+                resultadoDiv.innerHTML += `<p class="error-msg">Erro na linha ${i + 1}: Dados inválidos ou em falta.</p>`;
+                continue;
             }
-            prazoFinal.setHours(17, 0, 0, 0);
-            displayResult(resultadoDiv, index, linha, prazoFinal);
-            return;
-        }
 
-        // --- CÁLCULO DE SLA EM HORAS ÚTEIS ---
-        let prazoFinal = new Date(dataHora);
-        let horasRestantes = slaHoras;
-
-        // Ajusta o horário de início para estar dentro do expediente
-        if (prazoFinal.getHours() >= 17 || prazoFinal.getHours() < 8 || !isWorkday(prazoFinal)) {
-            if (prazoFinal.getHours() >= 17 || !isWorkday(prazoFinal)) {
-                 prazoFinal.setDate(prazoFinal.getDate() + 1);
-            }
-            while(!isWorkday(prazoFinal)) {
-                 prazoFinal.setDate(prazoFinal.getDate() + 1);
-            }
-            prazoFinal.setHours(8, 0, 0, 0);
-        }
-        
-        if (prazoFinal.getHours() >= 12 && prazoFinal.getHours() < 13) {
-            prazoFinal.setHours(13, 0, 0, 0);
-        }
-
-        while (horasRestantes > 0) {
-            const fimDoDia = new Date(prazoFinal);
-            fimDoDia.setHours(17, 0, 0, 0);
-
-            const almocoInicio = new Date(prazoFinal);
-            almocoInicio.setHours(12, 0, 0, 0);
-            
-            const almocoFim = new Date(prazoFinal);
-            almocoFim.setHours(13, 0, 0, 0);
-            
-            let horasDisponiveisNoDia = 0;
-
-            if (prazoFinal < almocoInicio) {
-                horasDisponiveisNoDia = (almocoInicio - prazoFinal) / 3600000;
-                if (horasRestantes <= horasDisponiveisNoDia) {
-                    prazoFinal.setTime(prazoFinal.getTime() + horasRestantes * 3600000);
-                    horasRestantes = 0;
-                    break;
-                }
-                horasRestantes -= horasDisponiveisNoDia;
-                prazoFinal.setHours(13,0,0,0);
-            }
-            
-            horasDisponiveisNoDia = (fimDoDia - prazoFinal) / 3600000;
-            
-            if (horasRestantes <= horasDisponiveisNoDia) {
-                prazoFinal.setTime(prazoFinal.getTime() + horasRestantes * 3600000);
-                horasRestantes = 0;
+            let slaHoras = 0;
+            if (prioridade === 'N') {
+                slaHoras = 16;
+            } else if (prioridade === 'U') {
+                slaHoras = 6;
             } else {
-                horasRestantes -= horasDisponiveisNoDia;
-                prazoFinal.setDate(prazoFinal.getDate() + 1);
-                while(!isWorkday(prazoFinal)) {
-                    prazoFinal.setDate(prazoFinal.getDate() + 1);
-                }
-                prazoFinal.setHours(8,0,0,0);
+                resultadoDiv.innerHTML += `<p class="error-msg">Erro na linha ${i + 1}: Prioridade inválida. Use 'N' ou 'U'.</p>`;
+                continue;
             }
+
+            const slaMs = slaHoras * 60 * 60 * 1000;
+            const tempoGastoMs = calculateTimeSpent(dataInicio, dataFim);
+            
+            const status = tempoGastoMs <= slaMs ? "Dentro do SLA" : "Fora do SLA";
+            const statusColor = status === "Dentro do SLA" ? "green" : "red";
+
+            resultadoDiv.innerHTML += `
+                <div class="item-sla" style="margin-bottom: 10px; border-left: 5px solid ${statusColor};">
+                    <p><strong>Item ${i + 1}</strong></p>
+                    <p>Tempo Gasto: ${formatDurationSLA(tempoGastoMs)} | Meta SLA: ${String(slaHoras).padStart(2, '0')}:00:00</p>
+                    <p><strong>Status: <span style="color:${statusColor};">${status}</span></strong></p>
+                </div>
+            `;
         }
-        displayResult(resultadoDiv, index, linha, prazoFinal);
-    });
-}
+    } catch (error) {
+        // Se qualquer erro ocorrer, será mostrado aqui!
+        resultadoDiv.innerHTML = `<p class="error-msg">${error.message}</p>`;
+    }
+});
