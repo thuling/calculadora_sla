@@ -5,23 +5,98 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Lead Time</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Estilos para as abas */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ccc;
+            margin-bottom: 1.5rem;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background-color: transparent;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            color: black;
+            border-bottom: 3px solid #FFD700;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        /* Estilos para o layout de duas colunas */
+        .multi-column-layout {
+            display: flex;
+            gap: 1rem;
+        }
+        .column {
+            flex: 1;
+        }
+    </style>
 </head>
 <body>
     <a href="index.html" class="back-link">← Voltar ao Menu</a>
     <div class="container">
         <img src="levellogo.png" alt="Logo" class="logo">
         <h3>Calculadora de Lead Time</h3>
-        <p>Calcula o tempo útil entre duas datas, considerando expediente (08h-17h, 1h de almoço) e feriados.</p>
 
-        <label for="dataInicio">Data e Hora de Início:</label>
-        <input type="text" id="dataInicio" placeholder="dd/mm/aaaa HH:MM:SS">
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab(event, 'Intervalo')">Intervalo Simples</button>
+            <button class="tab-button" onclick="openTab(event, 'Pares')">Múltiplos Pares</button>
+        </div>
 
-        <label for="dataFim">Data e Hora de Fim:</label>
-        <input type="text" id="dataFim" placeholder="dd/mm/aaaa HH:MM:SS">
+        <div id="Intervalo" class="tab-content active">
+            <p style="text-align: center;">Calcule o tempo útil entre uma data de início e uma data de fim.</p>
+            <label for="dataInicio">Data e Hora de Início:</label>
+            <input type="text" id="dataInicio" placeholder="dd/mm/aaaa HH:MM:SS">
 
-        <button id="calcularLeadTimeBtn">CALCULAR</button>
+            <label for="dataFim">Data e Hora de Fim:</label>
+            <input type="text" id="dataFim" placeholder="dd/mm/aaaa HH:MM:SS">
+        </div>
+
+        <div id="Pares" class="tab-content">
+            <p style="text-align: center;">Insira as datas de início e fim correspondentes, uma por linha. O sistema calculará o tempo de cada par e somará tudo.</p>
+            <div class="multi-column-layout">
+                <div class="column">
+                    <label for="listaInicio">Datas de Início:</label>
+                    <textarea id="listaInicio" rows="8" placeholder="dd/mm/aaaa HH:MM:SS"></textarea>
+                </div>
+                <div class="column">
+                    <label for="listaFim">Datas de Fim:</label>
+                    <textarea id="listaFim" rows="8" placeholder="dd/mm/aaaa HH:MM:SS"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <button id="calcularLeadTimeBtn">CALCULAR LEAD TIME</button>
         <div id="resultadoLeadTime"></div>
     </div>
+
     <script src="js/lead_time_script.js"></script>
+    <script>
+        // Script para controlar a troca de abas
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+    </script>
 </body>
 </html>
