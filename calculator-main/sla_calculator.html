@@ -5,29 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Calculadora de SLA Level</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   
   <script>
-    // Toda a sua lógica original de cálculo de SLA
-    // window.addEventListener("load", () => {
-    //   setTimeout(() => {
-    //     const telaBoasVindas = document.getElementById("tela-boas-vindas");
-    //     const mainContent = document.querySelector(".main-content");
-
-    //     if (telaBoasVindas) {
-    //         telaBoasVindas.style.opacity = '0';
-    //         telaBoasVindas.addEventListener('transitionend', () => {
-    //             telaBoasVindas.style.display = "none";
-    //         });
-    //     }
-    //     if (mainContent) {
-    //         mainContent.style.display = "block";
-    //     }
-    //   }, 3000); // 3 segundos
-    // });
-
     function calcularSLAs() {
       const tipo = document.getElementById("tipo").value;
       const cliente = document.getElementById("cliente").value;
@@ -145,53 +125,47 @@
   </script>
 </head>
 <body>
+
   <a href="index.html" class="back-link">← Voltar ao Menu</a>
-  <!-- <div id="tela-boas-vindas">
-    <img src="levellogo.png" alt="Logo Level" class="logo-boas-vindas">
-    <h2>Bem-vindo(a), Analista!</h2>
-    <div class="spinner"></div>
-  </div> -->
 
-  <div class="main-content">
-    <div class="container">
-        <img src="levellogo.png" alt="Logo" class="logo">
-        <h3>Calculadora de Prazo de SLA</h3>
-        <p class="subtitle">Insira os dados para calcular o prazo final de cada item.</p>
+  <div class="container-centered">
+      <img src="levellogo.png" alt="Logo" class="logo">
+      <h3>Calculadora de Prazo de SLA</h3>
+      <p class="subtitle">Insira os dados para calcular o prazo final de cada item.</p>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label for="cliente">Cliente:</label>
-                <div class="custom-select-wrapper">
-                    <select id="cliente">
-                        <option value="OUTRO">Selecione</option>
-                        <option value="OUTRO">AMARANTE</option>
-                        <option value="BK">BK</option>
-                        <option value="RENOVA">RENOVA</option>
-                        <option value="MOBI">MOBI</option>
-                        <option value="VESUVIUS">VESUVIUS</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="tipo">Nível de Prioridade:</label>
-                <div class="custom-select-wrapper">
-                    <select id="tipo">
-                        <option value="selecione">Selecione</option>
-                        <option value="normal">Normal</option>
-                        <option value="urgente">Urgente</option>
-                    </select>
-                </div>
-            </div>
-        </div>
+      <div class="form-row">
+          <div class="form-group">
+              <label for="cliente">Cliente:</label>
+              <div class="custom-select-wrapper">
+                  <select id="cliente">
+                      <option value="OUTRO">Selecione</option>
+                      <option value="OUTRO">AMARANTE</option>
+                      <option value="BK">BK</option>
+                      <option value="RENOVA">RENOVA</option>
+                      <option value="MOBI">MOBI</option>
+                      <option value="VESUVIUS">VESUVIUS</option>
+                  </select>
+              </div>
+          </div>
+          <div class="form-group">
+              <label for="tipo">Nível de Prioridade:</label>
+              <div class="custom-select-wrapper">
+                  <select id="tipo">
+                      <option value="selecione">Selecione</option>
+                      <option value="normal">Normal</option>
+                      <option value="urgente">Urgente</option>
+                  </select>
+              </div>
+          </div>
+      </div>
 
-        <div class="form-group">
-            <label for="listaHorarios">Lista de horários de chegada (um por linha):</label>
-            <textarea id="listaHorarios" rows="6" placeholder="Ex: 17/06/2025 10:30"></textarea>
-        </div>
+      <div class="form-group">
+          <label for="listaHorarios">Lista de horários de chegada (um por linha):</label>
+          <textarea id="listaHorarios" rows="6" placeholder="Ex: 17/06/2025 10:30"></textarea>
+      </div>
 
-        <button onclick="calcularSLAs()">CONFERIR PRAZO</button>
-        <div id="resultado"></div>
-    </div>
+      <button onclick="calcularSLAs()">CONFERIR PRAZO</button>
+      <div id="resultado"></div>
   </div>
 
 </body>

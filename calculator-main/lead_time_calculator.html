@@ -3,43 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verificador de SLA por Pares</title>
+    <title>Análise de SLA por Pares</title>
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        /* Estilos para o layout de múltiplas colunas */
-        .multi-column-layout {
-            display: flex;
-            gap: 1.5rem;
-        }
-        .column {
-            flex: 1;
-        }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <a href="index.html" class="back-link">← Voltar ao Menu</a>
-    <div class="container">
-        <img src="levellogo.png" alt="Logo" class="logo">
-        <h3>Verificador de SLA por Pares</h3>
-        <p style="text-align: center;">Insira as datas de início, fim e a prioridade correspondente para validar o cumprimento do SLA de cada tarefa.</p>
-        
-        <div class="multi-column-layout">
-            <div class="column">
-                <label for="listaInicio">Datas de Início:</label>
-                <textarea id="listaInicio" rows="8" placeholder="dd/mm/aaaa HH:MM:SS"></textarea>
-            </div>
-            <div class="column">
-                <label for="listaFim">Datas de Fim:</label>
-                <textarea id="listaFim" rows="8" placeholder="dd/mm/aaaa HH:MM:SS"></textarea>
-            </div>
-            <div class="column">
-                <label for="listaPrioridade">Prioridades (N/U):</label>
-                <textarea id="listaPrioridade" rows="8" placeholder="N ou U"></textarea>
-            </div>
+    <div class="container-full-width">
+        <div class="page-header">
+            <img src="levellogo.png" alt="Logo" class="logo">
+            <h3>Análise de SLA por Pares</h3>
+            <p style="text-align: center;">Insira as datas e prioridades para analisar o tempo gasto e o cumprimento do SLA.</p>
         </div>
 
-        <button id="verificarLeadTimeSlaBtn">VERIFICAR SLA</button>
-        <div id="resultadoLeadTime"></div>
+        <div class="main-layout">
+            <div class="input-column">
+                <div class="multi-column-layout">
+                    <div class="column">
+                        <label for="listaInicio">Data Aprovação:</label>
+                        <textarea id="listaInicio" rows="10" placeholder="dd/mm/aaaa HH:MM:SS"></textarea>
+                    </div>
+                    <div class="column">
+                        <label for="listaFim">Data Governança:</label>
+                        <textarea id="listaFim" rows="10" placeholder="dd/mm/aaaa HH:MM:SS"></textarea>
+                    </div>
+                    <div class="column">
+                        <label for="listaPrioridade">Prioridades (N/U):</label>
+                        <textarea id="listaPrioridade" rows="10" placeholder="N ou U"></textarea>
+                    </div>
+                </div>
+                <button id="verificarLeadTimeSlaBtn">ANALISAR SLA</button>
+            </div>
+
+            <div class="output-column">
+                <div id="resultadoLeadTime">
+                    <div class="placeholder-text">Os resultados individuais e a análise aparecerão aqui.</div>
+                </div>
+
+                <div id="statsSection" style="display: none;">
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <h4>Média de Tempo (Urgente)</h4>
+                            <p id="mediaU" class="stat-value">--:--:--</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Média de Tempo (Normal)</h4>
+                            <p id="mediaN" class="stat-value">--:--:--</p>
+                        </div>
+                    </div>
+                    <div class="stats-container">
+                        <div class="chart-card">
+                            <h4>Performance SLA - Urgente (U)</h4>
+                            <div class="chart-wrapper">
+                                <canvas id="chartU"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h4>Performance SLA - Normal (N)</h4>
+                             <div class="chart-wrapper">
+                                <canvas id="chartN"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="js/lead_time_script.js"></script>
