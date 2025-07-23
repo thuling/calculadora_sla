@@ -3,18 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Menu de Calculadoras</title>
+  <title>Level - Ferramentas de Análise</title>
   <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="menu-body">
-  <div class="menu-container">
-    <img src="levellogo.png" alt="Logo" class="menu-logo">
-    <h1>Bem-vindo, Analista!</h1>
-    <p>Selecione a ferramenta que deseja usar:</p>
-    <div class="menu-buttons">
-      <a href="sla_calculator.html" class="btn">Calculadora de SLA</a>
-      <a href="lead_time_calculator.html" class="btn">Calculadora de Lead Time</a>
-    </div>
+
+  <div class="menu-header">
+    <img src="levellogo.png" alt="Logo Level" class="menu-logo">
+    <h1>Ferramentas de Análise</h1>
+    <p>Selecione uma das ferramentas abaixo para iniciar.</p>
   </div>
+
+  <div class="menu-container">
+    <a href="sla_calculator.html" class="card-link">
+      <div class="menu-card">
+        <div class="card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <h2>Verificador de SLA</h2>
+        <p>Valide o tempo de resposta com base nas prioridades N e U.</p>
+      </div>
+    </a>
+
+    <a href="lead_time_calculator.html" class="card-link">
+      <div class="menu-card">
+        <div class="card-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+        </div>
+        <h2>Calculadora de Lead Time</h2>
+        <p>Calcule o tempo útil gasto em múltiplas tarefas ou processos.</p>
+      </div>
+    </a>
+  </div>
+
 </body>
 </html>

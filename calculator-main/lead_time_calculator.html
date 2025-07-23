@@ -1,46 +1,47 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Verificador de SLA</title>
-  <link rel="stylesheet" href="css/style.css">
-  <style>
-      /* Estilos para o layout de múltiplas colunas */
-      .multi-column-layout {
-          display: flex;
-          gap: 1rem;
-      }
-      .column {
-          flex: 1;
-      }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificador de SLA por Pares</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Estilos para o layout de múltiplas colunas */
+        .multi-column-layout {
+            display: flex;
+            gap: 1.5rem;
+        }
+        .column {
+            flex: 1;
+        }
+    </style>
 </head>
 <body>
-  <a href="index.html" class="back-link">← Voltar ao Menu</a>
-  <div class="container">
-    <img src="levellogo.png" alt="Logo" class="logo">
-    <h3>Verificador de SLA por Múltiplos Pares</h3>
-    <p style="text-align: center;">Insira as datas, horários e prioridades correspondentes para verificar o status de cada item.</p>
+    <a href="index.html" class="back-link">← Voltar ao Menu</a>
+    <div class="container">
+        <img src="levellogo.png" alt="Logo" class="logo">
+        <h3>Verificador de SLA por Pares</h3>
+        <p style="text-align: center;">Insira as datas de início, fim e a prioridade correspondente para validar o cumprimento do SLA de cada tarefa.</p>
+        
+        <div class="multi-column-layout">
+            <div class="column">
+                <label for="listaInicio">Datas de Início:</label>
+                <textarea id="listaInicio" rows="8" placeholder="dd/mm/aaaa HH:MM:SS"></textarea>
+            </div>
+            <div class="column">
+                <label for="listaFim">Datas de Fim:</label>
+                <textarea id="listaFim" rows="8" placeholder="dd/mm/aaaa HH:MM:SS"></textarea>
+            </div>
+            <div class="column">
+                <label for="listaPrioridade">Prioridades (N/U):</label>
+                <textarea id="listaPrioridade" rows="8" placeholder="N ou U"></textarea>
+            </div>
+        </div>
 
-    <div class="multi-column-layout">
-        <div class="column">
-            <label for="listaInicioSLA">Datas de Início:</label>
-            <textarea id="listaInicioSLA" rows="8" placeholder="dd/mm/aaaa HH:MM:SS"></textarea>
-        </div>
-        <div class="column">
-            <label for="listaFimSLA">Datas de Fim:</label>
-            <textarea id="listaFimSLA" rows="8" placeholder="dd/mm/aaaa HH:MM:SS"></textarea>
-        </div>
-        <div class="column">
-            <label for="listaPrioridadeSLA">Prioridades:</label>
-            <textarea id="listaPrioridadeSLA" rows="8" placeholder="N ou U"></textarea>
-        </div>
+        <button id="verificarLeadTimeSlaBtn">VERIFICAR SLA</button>
+        <div id="resultadoLeadTime"></div>
     </div>
 
-    <button id="verificarSlaBtn">VERIFICAR SLA</button>
-    <div id="resultadoSLA"></div>
-  </div>
-  <script src="js/sla_script.js"></script>
+    <script src="js/lead_time_script.js"></script>
 </body>
 </html>

@@ -5,9 +5,7 @@ let feriadosSla = [];
 async function carregarFeriadosSLA() {
     if (feriadosSla.length > 0) return;
     try {
-        // CORREÇÃO: O caminho './feriado.txt' é mais robusto.
-        // Ele diz ao navegador para procurar o ficheiro na mesma pasta que o ficheiro HTML que está a ser visualizado.
-        const response = await fetch('./feriado.txt'); 
+        const response = await fetch('./feriado.txt');
         if (!response.ok) {
             throw new Error(`Ficheiro 'feriado.txt' não encontrado. Verifique se o ficheiro está na mesma pasta que o seu index.html.`);
         }
@@ -21,7 +19,7 @@ async function carregarFeriadosSLA() {
             });
     } catch (error) {
         console.error("Erro detalhado ao carregar feriados:", error);
-        throw error; // Lança o erro para ser apanhado pelo bloco principal.
+        throw error;
     }
 }
 
@@ -90,41 +88,65 @@ function calculateTimeSpent(start, end) {
     return totalMs;
 }
 
-// --- EVENT LISTENER PRINCIPAL (MAIS ROBUSTO) ---
+// --- EVENT LISTENER PRINCIPAL (LÓGICA UNIFICADA) ---
 
 document.getElementById('verificarSlaBtn').addEventListener('click', async () => {
     const resultadoDiv = document.getElementById('resultadoSLA');
-    resultadoDiv.innerHTML = ''; // Limpa resultados anteriores
+    resultadoDiv.innerHTML = '';
 
     try {
         await carregarFeriadosSLA();
 
+        const cliente = document.getElementById('cliente').value;
         const listaInicio = document.getElementById('listaInicioSLA').value.trim().split('\n');
         const listaFim = document.getElementById('listaFimSLA').value.trim().split('\n');
         const listaPrioridade = document.getElementById('listaPrioridadeSLA').value.trim().split('\n');
 
-        if (listaInicio.length !== listaFim.length || listaInicio.length !== listaPrioridade.length || (listaInicio.length === 1 && listaInicio[0] === '')) {
-            throw new Error("As três colunas devem ter o mesmo número de linhas e não podem estar vazias.");
+        if ((listaInicio.length !== listaFim.length) || (listaInicio.length === 1 && listaInicio[0] === '')) {
+             throw new Error("As colunas de Início e Fim devem ter o mesmo número de linhas e não podem estar vazias.");
         }
+        
+        // Validação da coluna de prioridades APENAS se for "Outro" cliente
+        if (cliente === 'OUTRO' && (listaInicio.length !== listaPrioridade.length || (listaPrioridade.length === 1 && listaPrioridade[0] === ''))) {
+             throw new Error(`Para o cliente "Outro", a coluna de Prioridades deve ter o mesmo número de linhas que as de Início e Fim.`);
+        }
+
 
         for (let i = 0; i < listaInicio.length; i++) {
             const dataInicio = parseDateTimeSLA(listaInicio[i]);
             const dataFim = parseDateTimeSLA(listaFim[i]);
-            const prioridade = listaPrioridade[i].trim().toUpperCase();
 
-            if (!dataInicio || !dataFim || !prioridade) {
-                resultadoDiv.innerHTML += `<p class="error-msg">Erro na linha ${i + 1}: Dados inválidos ou em falta.</p>`;
+            if (!dataInicio || !dataFim) {
+                resultadoDiv.innerHTML += `<p class="error-msg">Erro na linha ${i + 1}: Formato de data inválido.</p>`;
                 continue;
             }
 
             let slaHoras = 0;
-            if (prioridade === 'N') {
-                slaHoras = 16;
-            } else if (prioridade === 'U') {
-                slaHoras = 6;
-            } else {
-                resultadoDiv.innerHTML += `<p class="error-msg">Erro na linha ${i + 1}: Prioridade inválida. Use 'N' ou 'U'.</p>`;
-                continue;
+            const prioridade = listaPrioridade[i] ? listaPrioridade[i].trim().toUpperCase() : 'N'; // Padrão 'N' se vazio
+
+            // Lógica de SLA
+            switch (cliente) {
+                case 'BK':
+                    // A regra original do BK era em dias, vamos assumir um equivalente em horas (3 dias * 8h/dia = 24h)
+                    slaHoras = 24; 
+                    break;
+                case 'RENOVA':
+                    slaHoras = 6;
+                    break;
+                case 'MOBI':
+                    slaHoras = (prioridade === 'U') ? 4 : 24;
+                    break;
+                case 'VESUVIUS':
+                    slaHoras = (prioridade === 'U') ? 4 : 8;
+                    break;
+                default: // 'OUTRO' ou 'AMARANTE'
+                    if (prioridade === 'N') slaHoras = 16;
+                    else if (prioridade === 'U') slaHoras = 6;
+                    else {
+                        resultadoDiv.innerHTML += `<p class="error-msg">Erro na linha ${i + 1}: Prioridade inválida. Use 'N' ou 'U'.</p>`;
+                        continue;
+                    }
+                    break;
             }
 
             const slaMs = slaHoras * 60 * 60 * 1000;
@@ -142,7 +164,6 @@ document.getElementById('verificarSlaBtn').addEventListener('click', async () =>
             `;
         }
     } catch (error) {
-        // Se qualquer erro ocorrer, será mostrado aqui!
         resultadoDiv.innerHTML = `<p class="error-msg">${error.message}</p>`;
     }
 });

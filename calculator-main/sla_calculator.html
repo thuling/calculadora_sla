@@ -3,38 +3,196 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calculadora de SLA</title>
+  <title>Calculadora de SLA Level</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    // Toda a sua lógica original de cálculo de SLA
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        const telaBoasVindas = document.getElementById("tela-boas-vindas");
+        const mainContent = document.querySelector(".main-content");
+
+        if (telaBoasVindas) {
+            telaBoasVindas.style.opacity = '0';
+            telaBoasVindas.addEventListener('transitionend', () => {
+                telaBoasVindas.style.display = "none";
+            });
+        }
+        if (mainContent) {
+            mainContent.style.display = "block";
+        }
+      }, 3000); // 3 segundos
+    });
+
+    function calcularSLAs() {
+      const tipo = document.getElementById("tipo").value;
+      const cliente = document.getElementById("cliente").value;
+      const lista = document.getElementById("listaHorarios").value.trim().split("\n");
+      const resultadoDiv = document.getElementById("resultado");
+      resultadoDiv.innerHTML = "";
+
+      lista.forEach((linha, index) => {
+        if (linha.trim() === '') return;
+        const partes = linha.trim().split(/\s+/);
+        if (partes.length < 2) {
+          resultadoDiv.innerHTML += `<p class="error-msg">Linha ${index + 1} inválida.</p>`;
+          return;
+        }
+
+        const [dia, mes, ano] = partes[0].split("/");
+        const [hora, minuto] = partes[1].split(":");
+        const dataHora = new Date(`${ano}-${mes}-${dia}T${hora}:${minuto}:00`);
+
+        if (isNaN(dataHora.getTime())) {
+          resultadoDiv.innerHTML += `<p class="error-msg">Linha ${index + 1} com data/hora inválida.</p>`;
+          return;
+        }
+
+        let slaHoras = 0;
+        let slaDiasUteis = 0;
+
+        switch (cliente) {
+          case "BK":
+            slaDiasUteis = tipo === "normal" ? 3 : 0;
+            break;
+          case "RENOVA":
+            slaHoras = tipo === "normal" ? 6 : 0;
+            break;
+          case "MOBI":
+            slaHoras = tipo === "urgente" ? 4 : 24;
+            break;
+          case "VESUVIUS":
+            slaHoras = tipo === "urgente" ? 4 : 8;
+            break;
+          default:
+            slaHoras = tipo === "urgente" ? 6 : 16;
+        }
+
+        if (slaDiasUteis > 0) {
+          let fim = new Date(dataHora);
+          let diasAdicionados = 0;
+          while (diasAdicionados < slaDiasUteis) {
+            fim.setDate(fim.getDate() + 1);
+            if (fim.getDay() !== 0 && fim.getDay() !== 6) diasAdicionados++;
+          }
+          fim.setHours(17, 0, 0, 0);
+          resultadoDiv.innerHTML += `
+            <div class="item-sla">
+              <p><strong>Item ${index + 1}:</strong> Entrada: ${linha}</p>
+              <p><strong>Prazo:</strong> ${fim.toLocaleString('pt-BR')}</p>
+            </div>`;
+          return;
+        }
+
+        const horaInicioExpediente = 8;
+        const horaFimExpediente = 17;
+        const duracaoAlmoco = 1;
+        let restante = slaHoras;
+        let dataAtual = new Date(dataHora);
+        let fim = new Date(dataHora);
+
+        while (restante > 0) {
+          if (dataAtual.getHours() < horaInicioExpediente) {
+            dataAtual.setHours(horaInicioExpediente, 0, 0, 0);
+          } else if (dataAtual.getHours() >= horaFimExpediente) {
+            dataAtual.setDate(dataAtual.getDate() + 1);
+            dataAtual.setHours(horaInicioExpediente, 0, 0, 0);
+          }
+
+          if (dataAtual.getDay() === 0 || dataAtual.getDay() === 6) {
+            dataAtual.setDate(dataAtual.getDate() + 1);
+            continue;
+          }
+
+          let fimTurno = new Date(dataAtual);
+          fimTurno.setHours(horaFimExpediente, 0, 0, 0);
+          let inicioAlmoco = new Date(dataAtual);
+          inicioAlmoco.setHours(12, 0, 0, 0);
+          let fimAlmoco = new Date(inicioAlmoco);
+          fimAlmoco.setHours(13, 0, 0, 0);
+          let tempoDisponivel = (fimTurno - dataAtual) / 3600000;
+
+          if (dataAtual < inicioAlmoco && fimTurno > fimAlmoco) {
+            tempoDisponivel -= duracaoAlmoco;
+          }
+
+          let horasParaUsar = Math.min(restante, tempoDisponivel);
+          fim = new Date(dataAtual.getTime() + horasParaUsar * 3600000);
+          if (dataAtual < inicioAlmoco && fim > inicioAlmoco) {
+            fim = new Date(fim.getTime() + duracaoAlmoco * 3600000);
+          }
+
+          restante -= horasParaUsar;
+          dataAtual = new Date(fim);
+
+          if (restante > 0) {
+            dataAtual.setDate(dataAtual.getDate() + 1);
+            dataAtual.setHours(horaInicioExpediente, 0, 0, 0);
+          }
+        }
+
+        resultadoDiv.innerHTML += `
+          <div class="item-sla">
+            <p><strong>Item ${index + 1}:</strong> Entrada: ${linha}</p>
+            <p><strong>Prazo:</strong> ${fim.toLocaleString('pt-BR')}</p>
+          </div>`;
+      });
+    }
+  </script>
 </head>
 <body>
   <a href="index.html" class="back-link">← Voltar ao Menu</a>
-  <div class="container">
-    <img src="levellogo.png" alt="Logo" class="logo">
-    <h3>Calcule o SLA aqui!</h3>
-
-    <label for="cliente">Cliente:</label>
-    <select id="cliente">
-      <option value="OUTRO">Selecione</option>
-      <option value="OUTRO">AMARANTE</option>
-      <option value="BK">BK</option>
-      <option value="RENOVA">RENOVA</option>
-      <option value="MOBI">MOBI</option>
-      <option value="VESUVIUS">VESUVIUS</option>
-    </select>
-
-    <label for="tipo">Nível de Prioridade:</label>
-    <select id="tipo">
-      <option value="selecione">Selecione</option>
-      <option value="normal">Normal</option>
-      <option value="urgente">Urgente</option>
-    </select>
-
-    <label for="listaHorarios">Lista de horários de chegada (um por linha):</label>
-    <textarea id="listaHorarios" rows="6" placeholder="Ex: dd/mm/aaaa HH:MM"></textarea>
-
-    <button id="calcularSlaBtn">CONFERIR</button>
-    <div id="resultado"></div>
+  <div id="tela-boas-vindas">
+    <img src="levellogo.png" alt="Logo Level" class="logo-boas-vindas">
+    <h2>Bem-vindo(a), Analista!</h2>
+    <div class="spinner"></div>
   </div>
-  <script src="js/sla_script.js"></script>
+
+  <div class="main-content">
+    <div class="container">
+        <img src="https://i.imgur.com/Vp1m29B.png" alt="Logo" class="logo">
+        <h3>Calculadora de Prazo de SLA</h3>
+        <p class="subtitle">Insira os dados para calcular o prazo final de cada item.</p>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="cliente">Cliente:</label>
+                <div class="custom-select-wrapper">
+                    <select id="cliente">
+                        <option value="OUTRO">Selecione</option>
+                        <option value="OUTRO">AMARANTE</option>
+                        <option value="BK">BK</option>
+                        <option value="RENOVA">RENOVA</option>
+                        <option value="MOBI">MOBI</option>
+                        <option value="VESUVIUS">VESUVIUS</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="tipo">Nível de Prioridade:</label>
+                <div class="custom-select-wrapper">
+                    <select id="tipo">
+                        <option value="selecione">Selecione</option>
+                        <option value="normal">Normal</option>
+                        <option value="urgente">Urgente</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="listaHorarios">Lista de horários de chegada (um por linha):</label>
+            <textarea id="listaHorarios" rows="6" placeholder="Ex: 17/06/2025 10:30"></textarea>
+        </div>
+
+        <button onclick="calcularSLAs()">CONFERIR PRAZO</button>
+        <div id="resultado"></div>
+    </div>
+  </div>
+
 </body>
 </html>

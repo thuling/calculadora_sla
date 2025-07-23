@@ -1,17 +1,16 @@
-let feriadosSla = [];
+let feriados = [];
 
-// --- FUNÇÕES AUXILIARES ---
+// --- FUNÇÕES AUXILIARES (sem alterações) ---
 
-// Carrega feriados do arquivo. O arquivo feriado.txt deve estar na mesma pasta que o index.html.
-async function carregarFeriadosSLA() {
-    if (feriadosSla.length > 0) return;
+async function carregarFeriados() {
+    if (feriados.length > 0) return;
     try {
-        const response = await fetch('feriado.txt'); // Caminho simplificado
+        const response = await fetch('./feriado.txt');
         if (!response.ok) {
-            throw new Error(`Ficheiro 'feriado.txt' não encontrado. Status: ${response.status}`);
+            throw new Error(`Ficheiro 'feriado.txt' não encontrado. Verifique se ele está na mesma pasta que o seu index.html.`);
         }
         const text = await response.text();
-        feriadosSla = text.split('\n')
+        feriados = text.split('\n')
             .map(line => line.trim())
             .filter(line => line)
             .map(line => {
@@ -19,13 +18,12 @@ async function carregarFeriadosSLA() {
                 return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
             });
     } catch (error) {
-        console.error("Erro ao carregar o arquivo de feriados:", error);
-        // Lança o erro para ser apanhado pelo bloco principal e mostrado ao utilizador
-        throw new Error("Não foi possível carregar o ficheiro de feriados. Verifique se 'feriado.txt' existe e está no formato correto.");
+        console.error("Erro detalhado ao carregar feriados:", error);
+        throw error;
     }
 }
 
-function parseDateTimeSLA(dateTimeStr) {
+function parseDateTime(dateTimeStr) {
     const parts = dateTimeStr.trim().split(/\s+/);
     if (parts.length < 2) return null;
     const [day, month, year] = parts[0].split('/');
@@ -40,14 +38,14 @@ function parseDateTimeSLA(dateTimeStr) {
     return date;
 }
 
-function isWorkdaySLA(dt) {
+function isWorkday(dt) {
     const dayOfWeek = dt.getDay();
     if (dayOfWeek === 0 || dayOfWeek === 6) return false;
     const dateStr = dt.toISOString().split('T')[0];
-    return !feriadosSla.includes(dateStr);
+    return !feriados.includes(dateStr);
 }
 
-function formatDurationSLA(ms) {
+function formatDuration(ms) {
     if (ms < 0) ms = 0;
     const totalSeconds = Math.floor(ms / 1000);
     const hours = Math.floor(totalSeconds / 3600);
@@ -56,12 +54,13 @@ function formatDurationSLA(ms) {
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
-// --- FUNÇÃO DE CÁLCULO DE TEMPO ÚTIL ---
+
+// --- FUNÇÃO DE CÁLCULO DE TEMPO ÚTIL (sem alterações) ---
 
 function calculateTimeSpent(start, end) {
     let totalMs = 0;
     let current = new Date(start);
-    while (!isWorkdaySLA(current) || current.getHours() >= 17) {
+    while (!isWorkday(current) || current.getHours() >= 17) {
         current.setDate(current.getDate() + 1);
         current.setHours(8, 0, 0, 0);
     }
@@ -83,33 +82,43 @@ function calculateTimeSpent(start, end) {
         }
         current.setDate(current.getDate() + 1);
         current.setHours(8, 0, 0, 0);
-        while (!isWorkdaySLA(current)) {
+        while (!isWorkday(current)) {
             current.setDate(current.getDate() + 1);
         }
     }
     return totalMs;
 }
 
-// --- EVENT LISTENER PRINCIPAL (MAIS ROBUSTO) ---
 
-document.getElementById('verificarSlaBtn').addEventListener('click', async () => {
-    const resultadoDiv = document.getElementById('resultadoSLA');
-    resultadoDiv.innerHTML = ''; // Limpa resultados anteriores
+// --- EVENT LISTENER PRINCIPAL (LÓGICA UNIFICADA) ---
+
+document.getElementById('verificarLeadTimeSlaBtn').addEventListener('click', async () => {
+    const resultadoDiv = document.getElementById('resultadoLeadTime');
+    resultadoDiv.innerHTML = '';
 
     try {
-        await carregarFeriadosSLA();
+        await carregarFeriados();
+        
+        const listaInicioEl = document.getElementById('listaInicio');
+        const listaFimEl = document.getElementById('listaFim');
+        const listaPrioridadeEl = document.getElementById('listaPrioridade');
 
-        const listaInicio = document.getElementById('listaInicioSLA').value.trim().split('\n');
-        const listaFim = document.getElementById('listaFimSLA').value.trim().split('\n');
-        const listaPrioridade = document.getElementById('listaPrioridadeSLA').value.trim().split('\n');
+        if (!listaInicioEl || !listaFimEl || !listaPrioridadeEl) {
+            throw new Error("Erro de programação: Um ou mais elementos não foram encontrados na página.");
+        }
+
+        const listaInicio = listaInicioEl.value.trim().split('\n');
+        const listaFim = listaFimEl.value.trim().split('\n');
+        const listaPrioridade = listaPrioridadeEl.value.trim().split('\n');
+
 
         if (listaInicio.length !== listaFim.length || listaInicio.length !== listaPrioridade.length || (listaInicio.length === 1 && listaInicio[0] === '')) {
             throw new Error("As três colunas devem ter o mesmo número de linhas e não podem estar vazias.");
         }
 
         for (let i = 0; i < listaInicio.length; i++) {
-            const dataInicio = parseDateTimeSLA(listaInicio[i]);
-            const dataFim = parseDateTimeSLA(listaFim[i]);
+            const dataInicio = parseDateTime(listaInicio[i]);
+            const dataFim = parseDateTime(listaFim[i]);
             const prioridade = listaPrioridade[i].trim().toUpperCase();
 
             if (!dataInicio || !dataFim || !prioridade) {
@@ -136,13 +145,12 @@ document.getElementById('verificarSlaBtn').addEventListener('click', async () =>
             resultadoDiv.innerHTML += `
                 <div class="item-sla" style="margin-bottom: 10px; border-left: 5px solid ${statusColor};">
                     <p><strong>Item ${i + 1}</strong></p>
-                    <p>Tempo Gasto: ${formatDurationSLA(tempoGastoMs)} | Meta SLA: ${String(slaHoras).padStart(2, '0')}:00:00</p>
+                    <p>Tempo Gasto: ${formatDuration(tempoGastoMs)} | Meta SLA: ${String(slaHoras).padStart(2, '0')}:00:00</p>
                     <p><strong>Status: <span style="color:${statusColor};">${status}</span></strong></p>
                 </div>
             `;
         }
     } catch (error) {
-        // Se qualquer erro ocorrer, será mostrado aqui!
         resultadoDiv.innerHTML = `<p class="error-msg">${error.message}</p>`;
     }
 });
