@@ -82,7 +82,7 @@ function renderChart(chartId, chartInstance, labels, data) {
     Chart.register(ChartDataLabels);
 
     return new Chart(ctx, {
-        type: 'pie', // <-- ALTERADO DE VOLTA PARA 'PIE'
+        type: 'pie', // <-- GRÁFICO DE PIZZA
         data: {
             labels: labels,
             datasets: [{
@@ -129,23 +129,17 @@ function renderChart(chartId, chartInstance, labels, data) {
 document.getElementById('verificarLeadTimeSlaBtn').addEventListener('click', async () => {
     const resultadoDiv = document.getElementById('resultadoLeadTime');
     const analysisWrapper = document.getElementById('analysis-wrapper');
+    const topOffendersCard = document.getElementById('top-offenders-card');
     resultadoDiv.innerHTML = '';
     analysisWrapper.style.display = 'none';
+    topOffendersCard.innerHTML = '';
 
     try {
         await carregarFeriados();
         
-        const listaInicioEl = document.getElementById('listaInicio'),
-              listaFimEl = document.getElementById('listaFim'),
-              listaPrioridadeEl = document.getElementById('listaPrioridade');
-
-        if (!listaInicioEl || !listaFimEl || !listaPrioridadeEl) {
-            throw new Error("Erro de programação: Elementos não encontrados.");
-        }
-
-        const listaInicio = listaInicioEl.value.trim().split('\n'),
-              listaFim = listaFimEl.value.trim().split('\n'),
-              listaPrioridade = listaPrioridadeEl.value.trim().split('\n');
+        const listaInicio = document.getElementById('listaInicio').value.trim().split('\n'),
+              listaFim = document.getElementById('listaFim').value.trim().split('\n'),
+              listaPrioridade = document.getElementById('listaPrioridade').value.trim().split('\n');
 
         if (listaInicio.length !== listaFim.length || listaInicio.length !== listaPrioridade.length || (listaInicio.length === 1 && listaInicio[0] === '')) {
             throw new Error("As três colunas devem ter o mesmo número de linhas e não podem estar vazias.");
@@ -155,6 +149,7 @@ document.getElementById('verificarLeadTimeSlaBtn').addEventListener('click', asy
             U: { tempos: [], dentro: 0, fora: 0 },
             N: { tempos: [], dentro: 0, fora: 0 }
         };
+        let infratores = [];
         let hasValidResults = false;
 
         for (let i = 0; i < listaInicio.length; i++) {
@@ -163,8 +158,8 @@ document.getElementById('verificarLeadTimeSlaBtn').addEventListener('click', asy
                   prioridade = listaPrioridade[i].trim().toUpperCase();
 
             if (!dataInicio || !dataFim || !prioridade) {
-                resultadoDiv.innerHTML += `<p class="error-msg">Erro na linha ${i + 1}: Dados inválidos ou em falta.</p>`;
-                continue;
+                 resultadoDiv.innerHTML += `<p class="error-msg">Erro na linha ${i + 1}: Dados inválidos ou em falta.</p>`;
+                 continue;
             }
 
             let slaHoras = 0;
@@ -182,7 +177,14 @@ document.getElementById('verificarLeadTimeSlaBtn').addEventListener('click', asy
             if (slaData[prioridade]) {
                 slaData[prioridade].tempos.push(tempoGastoMs);
                 if (status === "Dentro do SLA") slaData[prioridade].dentro++;
-                else slaData[prioridade].fora++;
+                else {
+                    slaData[prioridade].fora++;
+                    infratores.push({
+                        item: i + 1,
+                        estouroMs: tempoGastoMs - slaMs,
+                        prioridade: prioridade
+                    });
+                }
             }
             
             const statusClass = status === "Dentro do SLA" ? "status-in" : "status-out";
@@ -202,6 +204,25 @@ document.getElementById('verificarLeadTimeSlaBtn').addEventListener('click', asy
         
         if (hasValidResults) {
             analysisWrapper.style.display = 'block';
+
+            infratores.sort((a, b) => b.estouroMs - a.estouroMs);
+            const top3Infratores = infratores.slice(0, 3);
+            
+            let infratoresHtml = '<h4><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-icon"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>Top Infratores</h4><div class="offenders-table">';
+            if (top3Infratores.length > 0) {
+                top3Infratores.forEach(infrator => {
+                    infratoresHtml += `
+                        <div class="offender-row">
+                            <span class="offender-item">Item ${infrator.item} (${infrator.prioridade})</span>
+                            <span class="offender-time">+ ${formatDuration(infrator.estouroMs)}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                infratoresHtml += '<p class="no-offenders">Nenhum item fora do SLA!</p>';
+            }
+            infratoresHtml += '</div>';
+            topOffendersCard.innerHTML = infratoresHtml;
 
             const mediaU_Ms = slaData.U.tempos.length > 0 ? slaData.U.tempos.reduce((a, b) => a + b, 0) / slaData.U.tempos.length : 0;
             const mediaN_Ms = slaData.N.tempos.length > 0 ? slaData.N.tempos.reduce((a, b) => a + b, 0) / slaData.N.tempos.length : 0;

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Análise de SLA por Pares</title>
+    <title>Análise de SLA</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
@@ -21,11 +21,11 @@
             <div class="input-column">
                 <div class="multi-column-layout">
                     <div class="column">
-                        <label for="listaInicio">Datas de Aprovação:</label>
+                        <label for="listaInicio">Datas de Início:</label>
                         <textarea id="listaInicio" rows="12" placeholder="dd/mm/aaaa HH:MM:SS"></textarea>
                     </div>
                     <div class="column">
-                        <label for="listaFim">Datas de Governança:</label>
+                        <label for="listaFim">Datas de Fim:</label>
                         <textarea id="listaFim" rows="12" placeholder="dd/mm/aaaa HH:MM:SS"></textarea>
                     </div>
                     <div class="column">
@@ -50,6 +50,8 @@
             <h3 class="section-title">Análise Geral da Performance</h3>
             <div class="analysis-layout">
                 <div class="stat-group">
+                    <div id="top-offenders-card" class="stat-card offenders-card">
+                        </div>
                     <div class="stat-card">
                         <div class="stat-icon urgent">U</div>
                         <div class="stat-content">
