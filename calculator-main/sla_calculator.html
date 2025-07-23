@@ -11,22 +11,22 @@
   
   <script>
     // Toda a sua lógica original de cálculo de SLA
-    window.addEventListener("load", () => {
-      setTimeout(() => {
-        const telaBoasVindas = document.getElementById("tela-boas-vindas");
-        const mainContent = document.querySelector(".main-content");
+    // window.addEventListener("load", () => {
+    //   setTimeout(() => {
+    //     const telaBoasVindas = document.getElementById("tela-boas-vindas");
+    //     const mainContent = document.querySelector(".main-content");
 
-        if (telaBoasVindas) {
-            telaBoasVindas.style.opacity = '0';
-            telaBoasVindas.addEventListener('transitionend', () => {
-                telaBoasVindas.style.display = "none";
-            });
-        }
-        if (mainContent) {
-            mainContent.style.display = "block";
-        }
-      }, 3000); // 3 segundos
-    });
+    //     if (telaBoasVindas) {
+    //         telaBoasVindas.style.opacity = '0';
+    //         telaBoasVindas.addEventListener('transitionend', () => {
+    //             telaBoasVindas.style.display = "none";
+    //         });
+    //     }
+    //     if (mainContent) {
+    //         mainContent.style.display = "block";
+    //     }
+    //   }, 3000); // 3 segundos
+    // });
 
     function calcularSLAs() {
       const tipo = document.getElementById("tipo").value;
@@ -146,15 +146,15 @@
 </head>
 <body>
   <a href="index.html" class="back-link">← Voltar ao Menu</a>
-  <div id="tela-boas-vindas">
+  <!-- <div id="tela-boas-vindas">
     <img src="levellogo.png" alt="Logo Level" class="logo-boas-vindas">
     <h2>Bem-vindo(a), Analista!</h2>
     <div class="spinner"></div>
-  </div>
+  </div> -->
 
   <div class="main-content">
     <div class="container">
-        <img src="https://i.imgur.com/Vp1m29B.png" alt="Logo" class="logo">
+        <img src="levellogo.png" alt="Logo" class="logo">
         <h3>Calculadora de Prazo de SLA</h3>
         <p class="subtitle">Insira os dados para calcular o prazo final de cada item.</p>
 
