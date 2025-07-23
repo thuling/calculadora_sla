@@ -3,9 +3,12 @@
     --cor-fundo: #f4f7f9;
     --cor-superficie: #ffffff;
     --cor-primaria: #2ecc71;
+    --cor-secundaria: #3498db;
     --cor-texto-principal: #34495e;
     --cor-texto-secundario: #7f8c8d;
     --cor-borda: #dfe4e8;
+    --cor-sucesso: #2ecc71;
+    --cor-falha: #e74c3c;
     --sombra-caixa: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
@@ -20,13 +23,7 @@ body {
 }
 
 /* --- ESTILOS DO MENU (INDEX.HTML) --- */
-.menu-body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 90vh;
-}
+.menu-body { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 90vh; }
 .menu-header { text-align: center; margin-bottom: 3rem; }
 .menu-header h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; }
 .menu-header p { font-size: 1.1rem; color: var(--cor-texto-secundario); }
@@ -39,41 +36,31 @@ body {
 .menu-card h2 { color: var(--cor-texto-principal); font-size: 1.4rem; margin-bottom: 0.5rem; }
 .menu-card p { color: var(--cor-texto-secundario); font-size: 0.95rem; line-height: 1.5; }
 
-/* --- ESTILOS DA CALCULADORA DE SLA SIMPLES --- */
+/* --- LAYOUTS DAS CALCULADORAS --- */
 .container-centered {
+    width: 100%;
+    max-width: 650px;
+    margin: 1rem auto;
     background: var(--cor-superficie);
-    padding: 2rem; /* Padding reduzido */
+    padding: 2rem;
     border-radius: 12px;
     box-shadow: var(--sombra-caixa);
-    text-align: left;
-    width: 100%;
-    max-width: 650px; /* Largura máxima ajustada */
-    margin: 1rem auto; /* Margem ajustada */
 }
-.form-row { display: flex; gap: 1.5rem; margin-bottom: 1rem; }
-.form-group { flex: 1; min-width: 0; margin-bottom: 1rem; }
-.custom-select-wrapper { position: relative; }
-.custom-select-wrapper::after { content: '▼'; font-size: 1rem; color: var(--cor-texto-secundario); position: absolute; right: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; }
-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
-#resultado .item-sla { background-color: #f9f9f9; border: 1px solid var(--cor-borda); border-left: 5px solid var(--cor-primaria); border-radius: 8px; padding: 1rem 1.5rem; margin-top: 1rem; }
-#resultado p { margin: 0.5rem 0; }
 
-/* --- ESTILOS DA CALCULADORA DE LEAD TIME AVANÇADA --- */
-.container-full-width { width: 100%; max-width: 1400px; margin: 0 auto; }
+.container-full-width {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
 .page-header { text-align: center; margin-bottom: 2rem; }
 .main-layout { display: flex; gap: 2rem; align-items: flex-start; }
-.input-column { flex: 1; background: var(--cor-superficie); padding: 2rem; border-radius: 12px; box-shadow: var(--sombra-caixa); position: sticky; top: 2rem; }
-.output-column { flex: 1.2; }
-.placeholder-text { padding: 2rem; text-align: center; color: var(--cor-texto-secundario); font-style: italic; background: var(--cor-superficie); border-radius: 12px; box-shadow: var(--sombra-caixa); }
-#resultadoLeadTime .item-sla { background-color: var(--cor-superficie); border: 1px solid var(--cor-borda); border-radius: 8px; padding: 1rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-#statsSection { background: var(--cor-superficie); padding: 1.5rem; border-radius: 12px; box-shadow: var(--sombra-caixa); margin-top: 2rem; }
-.stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
-.stat-card, .chart-card { padding: 1rem; text-align: center; }
-.stat-card h4, .chart-card h4 { margin-top: 0; color: var(--cor-texto-secundario); font-size: 1rem; }
-.stat-card .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--cor-primaria); }
-.chart-wrapper { position: relative; height: 250px; width: 100%; }
+.input-column { flex: 1.2; background: var(--cor-superficie); padding: 2rem; border-radius: 12px; box-shadow: var(--sombra-caixa); position: sticky; top: 2rem; }
+.output-column { flex: 1; height: calc(100vh - 10rem); overflow-y: auto; padding-right: 15px; }
+.placeholder-text { padding: 2rem; text-align: center; color: var(--cor-texto-secundario); font-style: italic; background: var(--cor-superficie); border-radius: 12px; box-shadow: var(--sombra-caixa); height: 90%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.placeholder-icon { color: var(--cor-borda); }
 
-/* --- ESTILOS COMUNS A TODAS AS PÁGINAS --- */
+
+/* --- ESTILOS COMUNS --- */
 .logo { width: 120px; display: block; margin: 0 auto 1.5rem auto; }
 h3 { text-align: center; font-size: 1.8rem; margin-top: 0; margin-bottom: 0.5rem; }
 p.subtitle { text-align: center; color: var(--cor-texto-secundario); margin-bottom: 2rem; }
@@ -83,17 +70,51 @@ textarea { font-family: 'Consolas', monospace; }
 textarea:focus, select:focus { border-color: var(--cor-primaria); outline: none; box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2); }
 button { margin-top: 1.5rem; width: 100%; padding: 0.9rem; background: linear-gradient(45deg, #2ecc71, #27ae60); color: white; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: transform 0.2s; }
 button:hover { transform: translateY(-2px); }
-.multi-column-layout { display: flex; gap: 1rem; }
-.column { flex: 1; }
+.multi-column-layout, .form-row { display: flex; gap: 1.5rem; }
+.column, .form-group { flex: 1; }
+.custom-select-wrapper { position: relative; }
+.custom-select-wrapper::after { content: '▼'; font-size: 1rem; color: var(--cor-texto-secundario); position: absolute; right: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
 .back-link { position: absolute; top: 20px; left: 20px; text-decoration: none; color: var(--cor-texto-secundario); font-weight: 600; }
 .error-msg { color: #c62828; background-color: #ffebee; border: 1px solid #ef9a9a; padding: 1rem; border-radius: 8px; margin-top: 1rem; text-align: center; }
 
+/* --- RESULTADOS, MÉDIAS E GRÁFICOS (DESIGN MELHORADO) --- */
+.result-item {
+    background: var(--cor-superficie);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border-left: 5px solid var(--cor-borda);
+}
+.item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+.status-badge { padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600; color: white; }
+.status-badge.status-in { background-color: var(--cor-sucesso); }
+.status-badge.status-out { background-color: var(--cor-falha); }
+.item-body { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; color: var(--cor-texto-secundario); }
+
+.card-block { background: var(--cor-superficie); padding: 2rem; border-radius: 12px; box-shadow: var(--sombra-caixa); }
+.section-title { text-align: center; margin-bottom: 2rem; color: var(--cor-texto-principal); }
+.analysis-layout { display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; align-items: center; }
+.stat-group { display: flex; flex-direction: column; gap: 1.5rem; }
+.stat-card { display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem; background: #f9fafb; border-radius: 10px; }
+.stat-icon { font-size: 1.5rem; font-weight: 700; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.stat-icon.urgent { background-color: var(--cor-falha); }
+.stat-icon.normal { background-color: var(--cor-secundaria); }
+.stat-content h4 { margin: 0 0 0.25rem 0; color: var(--cor-texto-secundario); font-size: 0.9rem; }
+.stat-content .stat-value { font-size: 1.7rem; font-weight: 700; color: var(--cor-texto-principal); margin: 0; }
+
+.chart-group { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+.chart-card { text-align: center; }
+.chart-card h4 { margin-top: 0; color: var(--cor-texto-secundario); font-size: 1rem; margin-bottom: 1rem; }
+.chart-wrapper { position: relative; height: 220px; width: 100%; }
+
 /* --- RESPONSIVIDADE --- */
 @media (max-width: 1200px) {
-    .main-layout { flex-direction: column; }
+    .main-layout, .analysis-layout { flex-direction: column; }
     .input-column { position: static; }
-    .output-column { margin-top: 2rem; }
+    .output-column { margin-top: 2rem; height: auto; overflow-y: visible; }
 }
 @media (max-width: 768px) {
-    .form-row { flex-direction: column; gap: 1rem; }
+    .form-row, .multi-column-layout, .stats-container, .chart-group, .analysis-layout { flex-direction: column; gap: 1.5rem; }
 }

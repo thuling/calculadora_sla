@@ -6,6 +6,7 @@
     <title>Análise de SLA por Pares</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 </head>
 <body>
     <a href="index.html" class="back-link">← Voltar ao Menu</a>
@@ -13,23 +14,23 @@
         <div class="page-header">
             <img src="levellogo.png" alt="Logo" class="logo">
             <h3>Análise de SLA por Pares</h3>
-            <p style="text-align: center;">Insira as datas e prioridades para analisar o tempo gasto e o cumprimento do SLA.</p>
+            <p class="subtitle">Insira as datas e prioridades para analisar o tempo gasto e o cumprimento do SLA.</p>
         </div>
 
         <div class="main-layout">
             <div class="input-column">
                 <div class="multi-column-layout">
                     <div class="column">
-                        <label for="listaInicio">Data Aprovação:</label>
-                        <textarea id="listaInicio" rows="10" placeholder="dd/mm/aaaa HH:MM:SS"></textarea>
+                        <label for="listaInicio">Datas de Aprovação:</label>
+                        <textarea id="listaInicio" rows="12" placeholder="dd/mm/aaaa HH:MM:SS"></textarea>
                     </div>
                     <div class="column">
-                        <label for="listaFim">Data Governança:</label>
-                        <textarea id="listaFim" rows="10" placeholder="dd/mm/aaaa HH:MM:SS"></textarea>
+                        <label for="listaFim">Datas de Governança:</label>
+                        <textarea id="listaFim" rows="12" placeholder="dd/mm/aaaa HH:MM:SS"></textarea>
                     </div>
                     <div class="column">
                         <label for="listaPrioridade">Prioridades (N/U):</label>
-                        <textarea id="listaPrioridade" rows="10" placeholder="N ou U"></textarea>
+                        <textarea id="listaPrioridade" rows="12" placeholder="N ou U"></textarea>
                     </div>
                 </div>
                 <button id="verificarLeadTimeSlaBtn">ANALISAR SLA</button>
@@ -37,32 +38,44 @@
 
             <div class="output-column">
                 <div id="resultadoLeadTime">
-                    <div class="placeholder-text">Os resultados individuais e a análise aparecerão aqui.</div>
+                    <div class="placeholder-text">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="placeholder-icon"><path d="M12 20V10M18 20V4M6 20V16"></path></svg>
+                        <span>Os resultados individuais aparecerão aqui.</span>
+                    </div>
                 </div>
+            </div>
+        </div>
 
-                <div id="statsSection" style="display: none;">
-                    <div class="stats-container">
-                        <div class="stat-card">
+        <div id="analysis-wrapper" class="card-block" style="display: none;">
+            <h3 class="section-title">Análise Geral da Performance</h3>
+            <div class="analysis-layout">
+                <div class="stat-group">
+                    <div class="stat-card">
+                        <div class="stat-icon urgent">U</div>
+                        <div class="stat-content">
                             <h4>Média de Tempo (Urgente)</h4>
                             <p id="mediaU" class="stat-value">--:--:--</p>
                         </div>
-                        <div class="stat-card">
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon normal">N</div>
+                        <div class="stat-content">
                             <h4>Média de Tempo (Normal)</h4>
                             <p id="mediaN" class="stat-value">--:--:--</p>
                         </div>
                     </div>
-                    <div class="stats-container">
-                        <div class="chart-card">
-                            <h4>Performance SLA - Urgente (U)</h4>
-                            <div class="chart-wrapper">
-                                <canvas id="chartU"></canvas>
-                            </div>
+                </div>
+                <div class="chart-group">
+                    <div class="chart-card">
+                        <h4>Performance SLA - Urgente</h4>
+                        <div class="chart-wrapper">
+                            <canvas id="chartU"></canvas>
                         </div>
-                        <div class="chart-card">
-                            <h4>Performance SLA - Normal (N)</h4>
-                             <div class="chart-wrapper">
-                                <canvas id="chartN"></canvas>
-                            </div>
+                    </div>
+                    <div class="chart-card">
+                        <h4>Performance SLA - Normal</h4>
+                        <div class="chart-wrapper">
+                            <canvas id="chartN"></canvas>
                         </div>
                     </div>
                 </div>
